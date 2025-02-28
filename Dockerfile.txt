@@ -1,0 +1,25 @@
+FROM python:3.9-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies
+RUN pip install --no-cache-dir flask requests
+
+# Copy application file - no config.py needed!
+COPY pusher_api.py /app/
+
+# Create the spool directory
+RUN mkdir -p /opt/cmk-pusher/spool && \
+    chmod 777 /opt/cmk-pusher/spool
+
+# Set up logging
+RUN mkdir -p /app/logs && \
+    touch /app/logs/json.log && \
+    chmod 666 /app/logs/json.log
+
+# Expose port for the API
+EXPOSE 5000
+
+# Run the application
+CMD ["python", "pusher_api.py"]

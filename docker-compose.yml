@@ -1,0 +1,31 @@
+services:
+  cmk-pusher-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cmk-pusher-api
+    restart: unless-stopped
+    ports:
+      # Only the external port (left side) is configurable
+      - "${API_PORT:-5000}:5000"
+    volumes:
+      - ./spool:/opt/cmk-pusher/spool
+      - ./logs:/app/logs
+    environment:
+      - FLASK_ENV=production
+      - CMK_SPOOL_PATH=/opt/cmk-pusher/spool
+      - CMK_SECRET=your_secret_key_here
+      - CMK_DEBUG=True
+      # No need for CMK_PORT since we keep the internal port fixed
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - cmk-network
+
+networks:
+  cmk-network:
+    driver: bridge
